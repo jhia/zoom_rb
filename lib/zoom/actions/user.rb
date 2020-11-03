@@ -5,7 +5,7 @@ module Zoom
     module User
       def user_list(*args)
         params = Zoom::Params.new(Utils.extract_options!(args))
-        params.permit(%i[status page_size page_number])
+        params.permit(%i[status page_size role_id page_number include_fields next_page_token])
         response = self.class.get('/users', query: params, headers: request_headers)
         Utils.parse_response(response)
       end
@@ -46,7 +46,7 @@ module Zoom
       def user_assistants_create(*args)
         params = Zoom::Params.new(Utils.extract_options!(args))
         params.require(:user_id).permit(:assistants)
-        Utils.parse_response self.class.post("/users/#{params[:user_id]}/assistants", body: params.except(:user_id), headers: request_headers)
+        Utils.parse_response self.class.post("/users/#{params[:user_id]}/assistants", body: params.except(:user_id).to_json, headers: request_headers)
       end
 
       def user_assistants_delete_all(*args)
@@ -95,6 +95,24 @@ module Zoom
         params = Zoom::Params.new(Utils.extract_options!(args))
         params.require(:id).permit(%i[page_size next_page_token mc trash from to trash_type])
         Utils.parse_response self.class.get("/users/#{params[:id]}/recordings", query: params.except(:id), headers: request_headers)
+      end
+
+      def user_token(*args)
+        params = Zoom::Params.new(Utils.extract_options!(args))
+        params.require(:user_id).permit(%i[type ttl])
+        Utils.parse_response self.class.get("/users/#{params[:user_id]}/token", query: params.except(:user_id), headers: request_headers)
+      end
+
+      def user_permissions(*args)
+        params = Zoom::Params.new(Utils.extract_options!(args))
+        params.require(:user_id)
+        Utils.parse_response self.class.get("/users/#{params[:user_id]}/permissions", headers: request_headers)
+      end
+
+      def user_vanity_name(*args)
+        params = Zoom::Params.new(Utils.extract_options!(args))
+        params.require(:vanity_name)
+        Utils.parse_response self.class.get("/users/vanity_name", query: params.slice(:vanity_name), headers: request_headers)
       end
     end
   end
